@@ -1,0 +1,101 @@
+# SHIFT UI lab: builds up to 3 branches of squadronzero/squadron-zero side by side and publishes them
+# on THIS repo's GitHub Pages link, for team feedback on phones. Run it by hand:
+# Actions > Preview > Run workflow > branches, for example "main ui/lab-a".
+# A change to this repo's own files also rebuilds the preview, of "main" only.
+#
+# Safety:
+# - It never writes to squadronzero/squadron-zero and never touches the official site. It only reads
+#   public things: the branch code, the public release "site-data", and the recent detections the
+#   official site already serves (copied, no FIRMS key; this repo has no secrets at all).
+# - Every page is marked "PREVIEW", titled "[Preview]" and set to noindex.
+name: Preview
+
+on:
+  workflow_dispatch:
+    inputs:
+      branches:
+        description: "Branches of squadronzero/squadron-zero to preview (1 to 3, space separated)"
+        required: true
+        default: "main"
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: preview
+  cancel-in-progress: true
+
+env:
+  APP_REPO: squadronzero/squadron-zero
+  LIVE: https://squadronzero.github.io/squadron-zero/
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: read          # actions/configure-pages reads the Pages settings
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Check the branch names
+        env:
+          BRANCHES: ${{ inputs.branches || 'main' }}
+        run: python3 scripts/lab.py refs "$BRANCHES" | tee "$RUNNER_TEMP/refs.txt"
+      - name: Site data (public release site-data of the app repo)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download site-data -p site_data.zip -D "$RUNNER_TEMP" --repo "$APP_REPO"
+          ls -l "$RUNNER_TEMP/site_data.zip"
+      - name: Build each branch
+        run: |
+          set -euo pipefail
+          site="$RUNNER_TEMP/site"; mkdir -p "$site"; built=()
+          while read -r ref slug; do
+            echo "::group::$ref"
+            src="$RUNNER_TEMP/src/$slug"
+            git clone --quiet --depth 1 --branch "$ref" "https://github.com/$APP_REPO.git" "$src"
+            sha=$(git -C "$src" rev-parse --short HEAD)
+            data="$src/web/public/data"
+            mkdir -p "$data"
+            unzip -q "$RUNNER_TEMP/site_data.zip" -d "$data"
+            test -f "$data/meta.json"
+            # recent detections: a copy of what the official site serves now (no key). If the copy
+            # fails its check, the preview shows "not available", like the official site would.
+            if [ -f "$src/recent/snapshot.py" ]; then
+              python3 "$src/recent/snapshot.py" pull --site "$LIVE" --to "$data/recent" \
+                && python3 "$src/recent/snapshot.py" check "$data/recent" || rm -rf "$data/recent"
+            fi
+            (cd "$src/web" && npm ci --no-audit --no-fund && npm run build)
+            python3 scripts/lab.py mark "$src/web/dist/index.html" --ref "$ref" --sha "$sha" --live "$LIVE"
+            mv "$src/web/dist" "$site/$slug"
+            built+=("$ref $slug $sha")
+            echo "::endgroup::"
+            echo "- $ref ($sha): ./$slug/" >> "$GITHUB_STEP_SUMMARY"
+          done < "$RUNNER_TEMP/refs.txt"
+          python3 scripts/lab.py index "$site" --live "$LIVE" --built "${built[@]}"
+          du -sh "$site"
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ runner.temp }}/site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
