@@ -49,8 +49,8 @@ def label_html(ref: str, sha: str, live: str) -> str:
 <span>PREVIEW &middot; {r} &middot; {s}</span>
 <button type="button" aria-label="Hide the preview label" style="all:unset;cursor:pointer;min-width:28px;min-height:28px;display:grid;place-items:center;border-radius:999px">&#x2715;</button>
 </div>
-<script>(function(){{var f=document.getElementById('lab-flag');try{{if(sessionStorage.getItem('lab-flag')==='0')f.remove();}}catch(e){{}}
-f.querySelector('button').onclick=function(){{f.remove();try{{sessionStorage.setItem('lab-flag','0');}}catch(e){{}}}};}})();</script>
+<script>(function(){{var f=document.getElementById('lab-flag');
+f.querySelector('button').onclick=function(){{f.remove();}};}})();</script>
 """
 
 

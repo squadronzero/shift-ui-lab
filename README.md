@@ -26,7 +26,7 @@ Preview link: https://squadronzero.github.io/shift-ui-lab/
 
 - This repo only reads public things from the app repo. It never writes to it.
 - Every preview page is titled `[Preview]`, carries a red `PREVIEW · branch · commit` label (the ✕
-  hides it until the tab is closed), and is set to `noindex` with a `robots.txt` that blocks indexing.
+  hides it on that page only, and it comes back every time a page is opened), and is set to `noindex` with a `robots.txt` that blocks indexing.
 
 ## From preview to the official site
 
