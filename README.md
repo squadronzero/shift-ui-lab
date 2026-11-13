@@ -1,13 +1,13 @@
 # SHIFT UI lab
 
 Design previews of the SHIFT website for Team Squadron Zero's feedback. **Not the official site, and
-not for judging.** The official site is https://squadronzero.github.io/squadron-zero/.
+not for judging.** The official site is https://squadronzero.github.io/project-shift/.
 
 Preview link: https://squadronzero.github.io/shift-ui-lab/
 
 ## How it works
 
-- A UI idea lives on a branch of the app repo `squadronzero/squadron-zero`, named `ui/lab-<name>`
+- A UI idea lives on a branch of the app repo `squadronzero/project-shift`, named `ui/lab-<name>`
   (for example `ui/lab-a`). Branches never change the official site: it builds from `main` only.
 - **Actions → Preview → Run workflow** here, with 1 to 3 branch names separated by spaces (for
   example `main ui/lab-a ui/lab-b`). After about 5 minutes the preview link lists each one, so the

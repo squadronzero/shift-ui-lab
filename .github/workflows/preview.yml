@@ -1,10 +1,10 @@
-# SHIFT UI lab: builds up to 3 branches of squadronzero/squadron-zero side by side and publishes them
+# SHIFT UI lab: builds up to 3 branches of squadronzero/project-shift side by side and publishes them
 # on THIS repo's GitHub Pages link, for team feedback on phones. Run it by hand:
 # Actions > Preview > Run workflow > branches, for example "main ui/lab-a".
 # A change to this repo's own files also rebuilds the preview, of "main" only.
 #
 # Safety:
-# - It never writes to squadronzero/squadron-zero and never touches the official site. It only reads
+# - It never writes to squadronzero/project-shift and never touches the official site. It only reads
 #   public things: the branch code, the public release "site-data", and the recent detections the
 #   official site already serves (copied, no FIRMS key; this repo has no secrets at all).
 # - Every page is marked "PREVIEW", titled "[Preview]" and set to noindex.
@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
     inputs:
       branches:
-        description: "Branches of squadronzero/squadron-zero to preview (1 to 3, space separated)"
+        description: "Branches of squadronzero/project-shift to preview (1 to 3, space separated)"
         required: true
         default: "main"
   push:
@@ -28,8 +28,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  APP_REPO: squadronzero/squadron-zero
-  LIVE: https://squadronzero.github.io/squadron-zero/
+  APP_REPO: squadronzero/project-shift
+  LIVE: https://squadronzero.github.io/project-shift/
 
 jobs:
   build:
